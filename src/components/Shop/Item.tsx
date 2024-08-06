@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { Product } from "./Form";
-import { restApi } from "./Service";
+import { deleteProduct, editProduct, getProducts } from "../../services/product-api";
 
 type Props = {
   products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: (data: Product[]) => void;
 };
 
+type TProductUpdate = Omit<Product, "id" | "description">;
+
 export default function Item({ products, setProducts }: Props) {
-  const [popup, setPopup] = useState(false);
+  const [isShow, setIsShow] = useState(false);
   const [currentProductId, setCurrentProductId] = useState<number | null>(null);
   const [editName, setEditName] = useState<string>("");
 
-  function handlePopUp(boolValue: boolean, productId?: number) {
-    setPopup(boolValue);
-    if (boolValue && productId) {
+  function handlePopUp(isDisplay: boolean, productId?: number) {
+    setIsShow(isDisplay); // phải render lại tận 2 lần thì mới hiện ra popup (không hiểu thì đọc code)
+    if (isDisplay && productId) {
       setCurrentProductId(productId);
       const productName = products.find((p) => p.id === productId)?.title || "";
       setEditName(productName);
@@ -25,19 +27,13 @@ export default function Item({ products, setProducts }: Props) {
 
   async function handleEdit() {
     if (currentProductId) {
-      const updateProduct = {
+      const updateProduct : TProductUpdate = {
         title: editName,
+        price: 1234
       };
-      await restApi({
-        endpoint: `products/${currentProductId}`,
-        method: "PUT",
-        body: updateProduct,
-      });
+      await editProduct(currentProductId, updateProduct);
 
-      const data = await restApi({
-        endpoint: `products`,
-        method: "GET",
-      });
+      const data = await getProducts();
       setProducts(data);
       setEditName("");
       handlePopUp(false);
@@ -46,11 +42,8 @@ export default function Item({ products, setProducts }: Props) {
 
   async function handleDelete(id?: number) {
     if (id) {
-      await restApi({
-        endpoint: `products/${id}`,
-        method: "DELETE",
-      });
-      setProducts((prevProduct) => prevProduct.filter((p) => p.id !== id)); // filter => true: được chọn false: loại
+      await deleteProduct(id);
+      setProducts(products.filter((p) => p.id !== id)); // filter => true: được chọn false: loại
     }
   }
 
@@ -81,7 +74,7 @@ export default function Item({ products, setProducts }: Props) {
           </div>
         </div>
       ))}
-      {popup && (
+      {isShow ? (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded shadow-lg">
             <h2 className="text-lg font-bold">Edit Product</h2>
@@ -107,7 +100,7 @@ export default function Item({ products, setProducts }: Props) {
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

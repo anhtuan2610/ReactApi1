@@ -1,38 +1,41 @@
 import { useEffect, useState } from "react";
 import Add from "./Add";
 import ListProduct from "./List";
-import { restApi } from "./Service";
 import SearchProduct from "./Search";
+import { getProducts } from "../../services/product-api";
+import Modal from "./Modal";
 
 export type Product = {
-  id?: number;
+  id: number;
   title: string;
-  price?: number;
-  description?: string;
+  price: number;
+  description: string;
 };
 
 export default function Form() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [isShow, setIsShow] = useState(false);
+
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const data = await restApi({ method: "GET", endpoint: "products" });
+        const data = await getProducts();
         setProducts(data);
       } catch (error) {
         console.log(error);
       }
     }
     fetchProducts();
-  }, [setProducts]);
+  }, []);
 
   return (
-    <div className="flex justify-center items-center w-full h-screen">
+    <div className="flex z-20 justify-center items-center w-full h-screen">
       <div className="flex flex-col items-center w-2/5 h-5/6 border-2 border-blue-600">
         <div className="text-2xl font-bold pt-6">Demo Api</div>
 
         {/* Search */}
-        <div>
-          <SearchProduct setProducts={setProducts}/>
+        <div className="flex justify-center items-center pt-3">
+          <SearchProduct setProducts={setProducts} />
         </div>
 
         {/* List -> Item (edit, delete) */}
@@ -43,6 +46,20 @@ export default function Form() {
         {/* Add */}
         <div>
           <Add setProducts={setProducts} />
+        </div>
+
+        {/* Modal */}
+        <div>
+          <button
+            onClick={() => {
+              setIsShow(true);
+            }}
+            id="openModal"
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Open Modal
+          </button>
+          <Modal isShow={isShow} setIsShow={setIsShow} />
         </div>
       </div>
     </div>

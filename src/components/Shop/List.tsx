@@ -3,7 +3,7 @@ import { Product } from "./Form";
 
 type Props = {
   products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: (data: Product[]) => void;
 };
 
 export default function ListProduct({ products, setProducts }: Props) {

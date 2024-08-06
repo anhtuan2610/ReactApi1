@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { Product } from "./Form";
-import { restApi } from "./Service";
+import { createProduct, getProducts } from "../../services/product-api";
 
 type Props = {
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: (data: Product[]) => void;
 };
+
+type TProductNoId = Omit<Product, "id">;
 
 export default function Add({ setProducts }: Props) {
   const [name, setName] = useState("");
+  
   async function addHandle() {
-    const newProduct = {
+    const newProduct : TProductNoId = {
       title: name,
       price: 10000,
       description: "abc",
     };
-    await restApi({ method: "POST", endpoint: "products", body: newProduct });
-    const data = await restApi({
-      endpoint: `products`,
-      method: "GET",
-    });
+    await createProduct(newProduct);
+    const data = await getProducts();
     setProducts(data);
     setName("");
   }
